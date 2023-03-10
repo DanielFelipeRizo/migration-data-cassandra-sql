@@ -9,6 +9,15 @@ def conexioncassandra():
 
     return cluster.connect()
 
+def conectionLocalCassandra():
+    from cassandra.cluster import Cluster
+    from cassandra.auth import PlainTextAuthProvider
+
+    auth_provider = PlainTextAuthProvider(username='', password='')
+
+    cluster = Cluster(['127.0.0.1'], port=9042, auth_provider=auth_provider)
+
+    return cluster
 
 
 # try:

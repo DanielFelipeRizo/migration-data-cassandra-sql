@@ -1,12 +1,22 @@
 import pyodbc
 ##pip install pyodbc
 conn = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server};'
-                      'Server=MSI;'
+                      'Server=DESKTOP-8CD6IGB;'
                       'Database=migracion_pasantias;'
                       'Username=sa;'
                       'Password=12345;'
                       'Trusted_Connection=yes;')
 conn.cursor()
+
+
+def connLocalSQLServer():
+    strConn = pyodbc.connect('Driver={ODBC Driver 17 for SQL Server};'
+                          'Server=DESKTOP-8CD6IGB;'
+                          'Database=migracion_pasantias;'
+                          'Username=sa;'
+                          'Password=12345;'
+                          'Trusted_Connection=yes;')
+    return conn.cursor()
 
 # sessionsql = conn.cursor()
 
