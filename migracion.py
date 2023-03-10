@@ -1,11 +1,11 @@
-from conectionCassandra import conectionLocalCassandra
+from conectionCassandra import conectionCassandra
 from conectionSQLServer import connLocalSQLServer
 
 
-def select():
+def migrationData():
 
     #activar sesion conexion cassandra
-    sesionCassandra = conectionLocalCassandra().connect()
+    sesionCassandra = conectionCassandra().connect()
 
     consulta = "select id, terminal, transaction_id, estado, forma_pago, authorization_code, channel, date_transaction, debit_amount, " \
                "debit_coin, debit_currency, exchange_rate, exchange_rate_currency, name_account, period, sequential, service_account, " \
@@ -55,4 +55,8 @@ def select():
     connLocalSQLServer().close()
 
 
-select()
+try:
+    migrationData()
+
+except Exception as e:
+    print("error en la conexion o insersion. ", e)

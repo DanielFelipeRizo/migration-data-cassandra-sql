@@ -1,35 +1,48 @@
-import unittest
-from unittest.mock import patch
-import migracion
+#pruebas unitarias del script
 
-class TestMigracion(unittest.TestCase):
+from conectionCassandra import conectionCassandra
+from conectionSQLServer import connLocalSQLServer
 
-    def setUp(self):
-        self.tablaDb = "comercio"
-        self.columnaTabla = "celular"
-        self.esquemaBD = "comercio"
 
-    def tearDown(self):
-        pass
+def migrationData():
 
-    @patch('migracion.conexionSQLServer')
-    @patch('migracion.conexioncassandra')
-    def test_migracion_exitosa(self, mock_sessioncassandra, mock_sessionsql):
-        mock_sessioncassandra.execute.return_value.all.return_value = [('1234567890',)]
+    #activar sesion conexion cassandra
+    sesionCassandra = conectionCassandra().connect()
 
-        migracion.migrar(self.tablaDb, self.columnaTabla, self.esquemaBD)
+    consulta = "select id, terminal, transaction_id, estado from registrar_pago.registrar_pago;"
 
-        mock_sessioncassandra.execute.assert_called_once_with("select celular from polaris_cmb_comercio.comercio")
-        mock_sessionsql.execute.assert_called_once_with("insert into comercio (celular) values ('1234567890')")
+    ejecutarConsulta = sesionCassandra.execute(consulta)
 
-    @patch('migracion.conexionSQLServer')
-    @patch('migracion.conexioncassandra')
-    def test_error_de_conexion_o_insersion(self, mock_sessioncassandra, mock_sessionsql):
-        mock_sessioncassandra.execute.side_effect = Exception("Error de conexión o consulta")
+    dataToList = list(ejecutarConsulta)
+    cont = 0
 
-        result = migracion.migrar(self.tablaDb, self.columnaTabla, self.esquemaBD)
+    #sesion sql server
+    cursor = connLocalSQLServer()
 
-        self.assertEqual(result, "error de conexion o insersion")
 
-if __name__ == '__main__':
-    unittest.main()
+    actIdentInsert = "SET IDENTITY_INSERT migracion_pasantias.dbo.historico_reportes ON;"
+    cursor.execute(actIdentInsert)
+    connLocalSQLServer().commit()
+
+    for row in dataToList:
+        a = f"INSERT migracion_pasantias.dbo.historico_reportes (id, terminal, transaction_id, estado) VALUES ({row[0]}, '{row[1]}', '{row[2]}', '{row[3]}')"
+
+        # activar conexion sql
+        cursor.execute(a)
+        connLocalSQLServer().commit()
+
+        cont = cont+1
+        print(cont, " insercion exitosa")
+
+    desactIdentInsert = "SET IDENTITY_INSERT migracion_pasantias.dbo.historico_reportes OFF;"
+    cursor.execute(desactIdentInsert)
+    connLocalSQLServer().commit()
+
+    connLocalSQLServer().close()
+
+
+try:
+    migrationData()
+
+except Exception as e:
+    print("error en la conexion o insersion. ", e)

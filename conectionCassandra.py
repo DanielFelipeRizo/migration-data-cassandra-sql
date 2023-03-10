@@ -9,7 +9,7 @@ def conexioncassandra():
 
     return cluster.connect()
 
-def conectionLocalCassandra():
+def conectionCassandra():
     from cassandra.cluster import Cluster
     from cassandra.auth import PlainTextAuthProvider
 
@@ -41,3 +41,4 @@ def conectionLocalCassandra():
 #
 # except Exception as e:
 #     print('error')
+
